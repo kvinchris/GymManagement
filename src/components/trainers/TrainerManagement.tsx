@@ -160,3 +160,220 @@ const mockClasses: TrainerClass[] = [
     description: "High-intensity interval training for maximum calorie burn",
     date: new Date(new Date().setDate(new Date().getDate())),
     startTime: "17:30",
+    endTime: "18:30",
+    capacity: 10,
+    enrolled: 9,
+    location: "Functional Training Area",
+    isRecurring: true,
+    recurringDays: ["monday", "wednesday", "friday"],
+  },
+];
+
+const TrainerManagement: React.FC = () => {
+  const { toast } = useToast();
+  const [trainers, setTrainers] = useState<Trainer[]>(mockTrainers);
+  const [classes, setClasses] = useState<TrainerClass[]>(mockClasses);
+  const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null);
+  const [isAddTrainerOpen, setIsAddTrainerOpen] = useState(false);
+  const [isTrainerDetailOpen, setIsTrainerDetailOpen] = useState(false);
+  const [isTrainerScheduleOpen, setIsTrainerScheduleOpen] = useState(false);
+  const [isAddClassOpen, setIsAddClassOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  const handleAddTrainer = (newTrainer: Trainer) => {
+    setTrainers([...trainers, { ...newTrainer, id: `${trainers.length + 1}` }]);
+    setIsAddTrainerOpen(false);
+    toast({
+      title: "Trainer Added",
+      description: `${newTrainer.name} has been added to the system.`,
+    });
+  };
+
+  const handleUpdateTrainer = (updatedTrainer: Trainer) => {
+    setTrainers(
+      trainers.map((trainer) =>
+        trainer.id === updatedTrainer.id ? updatedTrainer : trainer,
+      ),
+    );
+    setSelectedTrainer(updatedTrainer);
+    toast({
+      title: "Trainer Updated",
+      description: `${updatedTrainer.name}'s information has been updated.`,
+    });
+  };
+
+  const handleDeleteTrainer = () => {
+    if (selectedTrainer) {
+      setTrainers(
+        trainers.filter((trainer) => trainer.id !== selectedTrainer.id),
+      );
+      setClasses(classes.filter((cls) => cls.trainerId !== selectedTrainer.id));
+      setIsDeleteDialogOpen(false);
+      setIsTrainerDetailOpen(false);
+      setSelectedTrainer(null);
+      toast({
+        title: "Trainer Removed",
+        description: `${selectedTrainer.name} has been removed from the system.`,
+      });
+    }
+  };
+
+  const handleSelectTrainer = (trainer: Trainer) => {
+    setSelectedTrainer(trainer);
+    setIsTrainerDetailOpen(true);
+  };
+
+  const handleViewSchedule = (trainer: Trainer) => {
+    setSelectedTrainer(trainer);
+    setIsTrainerScheduleOpen(true);
+  };
+
+  const handleAddClass = (newClass: TrainerClass) => {
+    setClasses([...classes, { ...newClass, id: `c${classes.length + 1}` }]);
+    setIsAddClassOpen(false);
+    toast({
+      title: "Class Added",
+      description: `${newClass.className} has been added to the schedule.`,
+    });
+  };
+
+  const handleUpdateClass = (updatedClass: TrainerClass) => {
+    setClasses(
+      classes.map((cls) => (cls.id === updatedClass.id ? updatedClass : cls)),
+    );
+    toast({
+      title: "Class Updated",
+      description: `${updatedClass.className} has been updated.`,
+    });
+  };
+
+  const handleDeleteClass = (classId: string) => {
+    setClasses(classes.filter((cls) => cls.id !== classId));
+    toast({
+      title: "Class Removed",
+      description: "The class has been removed from the schedule.",
+    });
+  };
+
+  const getTrainerClasses = (trainerId: string) => {
+    return classes.filter((cls) => cls.trainerId === trainerId);
+  };
+
+  return (
+    <div className="container mx-auto p-4 bg-white">
+      <h1 className="text-2xl font-bold mb-6">Trainer Management</h1>
+
+      <TrainerList
+        trainers={trainers}
+        onSelectTrainer={handleSelectTrainer}
+        onViewSchedule={handleViewSchedule}
+        onAddTrainer={() => setIsAddTrainerOpen(true)}
+      />
+
+      {/* Add Trainer Dialog */}
+      <Dialog open={isAddTrainerOpen} onOpenChange={setIsAddTrainerOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Add New Trainer</DialogTitle>
+            <DialogDescription>
+              Enter the details for the new trainer below.
+            </DialogDescription>
+          </DialogHeader>
+          <TrainerForm
+            onSubmit={handleAddTrainer}
+            onCancel={() => setIsAddTrainerOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Trainer Detail Dialog */}
+      <Dialog open={isTrainerDetailOpen} onOpenChange={setIsTrainerDetailOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Trainer Details</DialogTitle>
+          </DialogHeader>
+          {selectedTrainer && (
+            <TrainerDetail
+              trainer={selectedTrainer}
+              onUpdate={handleUpdateTrainer}
+              onDelete={() => setIsDeleteDialogOpen(true)}
+              onClose={() => setIsTrainerDetailOpen(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Trainer Schedule Dialog */}
+      <Dialog
+        open={isTrainerScheduleOpen}
+        onOpenChange={setIsTrainerScheduleOpen}
+      >
+        <DialogContent className="sm:max-w-[800px]">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedTrainer
+                ? `${selectedTrainer.name}'s Schedule`
+                : "Trainer Schedule"}
+            </DialogTitle>
+          </DialogHeader>
+          {selectedTrainer && (
+            <TrainerSchedule
+              trainer={selectedTrainer}
+              classes={getTrainerClasses(selectedTrainer.id)}
+              onAddClass={() => setIsAddClassOpen(true)}
+              onUpdateClass={handleUpdateClass}
+              onDeleteClass={handleDeleteClass}
+              onClose={() => setIsTrainerScheduleOpen(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Class Dialog */}
+      <Dialog open={isAddClassOpen} onOpenChange={setIsAddClassOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Add New Class</DialogTitle>
+            <DialogDescription>
+              Enter the details for the new class below.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedTrainer && (
+            <ClassForm
+              trainerId={selectedTrainer.id}
+              onSubmit={handleAddClass}
+              onCancel={() => setIsAddClassOpen(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action will permanently delete the trainer and all associated
+              classes. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteTrainer}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+};
+
+export default TrainerManagement;
