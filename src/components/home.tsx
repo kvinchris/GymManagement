@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from "react";
+import QuickAttendanceDialog from "./dashboard/QuickAttendanceDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import DashboardSummary from "./dashboard/DashboardSummary";
 import MembershipChart from "./dashboard/MembershipChart";
 import UpcomingClasses from "./dashboard/UpcomingClasses";
 import ExpiringMemberships from "./dashboard/ExpiringMemberships";
 import TrainerSchedule from "./dashboard/TrainerSchedule";
+import AttendanceWidget from "./dashboard/AttendanceWidget";
 import MemberManagement from "./members/MemberManagement";
 import PackageManagement from "./packages/PackageManagement";
 import TrainerManagement from "./trainers/TrainerManagement";
+import ClassManagement from "./classes/ClassManagement";
 import { Button } from "./ui/button";
 import {
   Bell,
@@ -57,6 +60,7 @@ const Home = () => {
     availableTrainers: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [isAttendanceDialogOpen, setIsAttendanceDialogOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -198,6 +202,12 @@ const Home = () => {
               activeMembers={dashboardData.activeMembers}
               upcomingClasses={dashboardData.upcomingClasses}
               availableTrainers={dashboardData.availableTrainers}
+              onQuickAttendance={() => setIsAttendanceDialogOpen(true)}
+            />
+
+            <QuickAttendanceDialog
+              open={isAttendanceDialogOpen}
+              onOpenChange={setIsAttendanceDialogOpen}
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
@@ -208,6 +218,12 @@ const Home = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
               <ExpiringMemberships />
               <TrainerSchedule />
+            </div>
+
+            <div className="mt-6">
+              <AttendanceWidget
+                onQuickAttendance={() => setIsAttendanceDialogOpen(true)}
+              />
             </div>
           </>
         );
@@ -250,15 +266,13 @@ const Home = () => {
         );
       case "classes":
         return (
-          <div className="bg-white p-6 rounded-lg shadow-sm">
+          <div>
             <h2 className="text-2xl font-bold mb-4">Class Management</h2>
             <p className="text-gray-500 mb-6">
-              This section will allow you to manage gym classes.
+              Manage gym classes, schedules, and assign trainers.
             </p>
-            <div className="p-12 border-2 border-dashed border-gray-300 rounded-lg text-center">
-              <p className="text-gray-400">
-                Class management interface will be implemented here
-              </p>
+            <div className="mt-6">
+              <ClassManagement />
             </div>
           </div>
         );

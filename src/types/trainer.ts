@@ -28,6 +28,7 @@ export interface TrainerClass {
   capacity: number;
   enrolled: number;
   location: string;
+  price: number;
   isRecurring: boolean;
   recurringDays?: string[]; // ['monday', 'wednesday', 'friday']
   createdBy?: string; // Firebase Auth UID of the user who created the class

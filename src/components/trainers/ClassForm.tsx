@@ -34,6 +34,9 @@ const classSchema = z.object({
     .number()
     .int()
     .positive({ message: "Capacity must be a positive integer" }),
+  price: z.coerce
+    .number()
+    .nonnegative({ message: "Price must be a non-negative number" }),
   location: z.string().min(2, { message: "Location is required" }),
   isRecurring: z.boolean().default(false),
 });
@@ -80,6 +83,7 @@ const ClassForm = ({
           startTime: trainerClass.startTime,
           endTime: trainerClass.endTime,
           capacity: trainerClass.capacity,
+          price: trainerClass.price || 0,
           location: trainerClass.location,
           isRecurring: trainerClass.isRecurring,
         }
@@ -90,6 +94,7 @@ const ClassForm = ({
           startTime: "09:00",
           endTime: "10:00",
           capacity: 10,
+          price: 0,
           location: "Main Gym",
           isRecurring: false,
         },
@@ -217,6 +222,28 @@ const ClassForm = ({
                 <FormDescription>
                   Maximum number of participants
                 </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="price"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Price</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="0"
+                    {...field}
+                    disabled={isSubmitting}
+                  />
+                </FormControl>
+                <FormDescription>Class price per session</FormDescription>
                 <FormMessage />
               </FormItem>
             )}

@@ -6,6 +6,11 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { useAuth } from "./contexts/AuthContext";
 import routes from "tempo-routes";
 
+// Lazy load the AttendanceManagement component
+const AttendanceManagement = lazy(
+  () => import("./components/attendance/AttendanceManagement"),
+);
+
 // Lazy load components for better performance
 const TrainerView = lazy(() => import("./components/trainers/TrainerView"));
 const UnauthorizedPage = lazy(() => import("./components/UnauthorizedPage"));
@@ -85,6 +90,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <Home />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/attendance/*"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AttendanceManagement />
               </ProtectedRoute>
             }
           />

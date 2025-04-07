@@ -69,6 +69,11 @@ const Sidebar = () => {
       href: "/classes",
     },
     {
+      icon: <Users size={20} />,
+      label: "Attendance",
+      href: "/attendance",
+    },
+    {
       icon: <BarChart3 size={20} />,
       label: "Reports",
       href: "/reports",

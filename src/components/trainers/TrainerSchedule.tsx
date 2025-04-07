@@ -10,7 +10,14 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Plus, Users, MapPin, Clock } from "lucide-react";
+import {
+  ArrowLeft,
+  Plus,
+  Users,
+  MapPin,
+  Clock,
+  DollarSign,
+} from "lucide-react";
 import { Trainer, TrainerClass } from "@/types/trainer";
 
 interface TrainerScheduleProps {
@@ -178,6 +185,14 @@ const TrainerSchedule = ({
                               <Users className="h-4 w-4 mr-1 text-gray-500" />
                               {cls.enrolled} enrolled
                             </div>
+                            {cls.price !== undefined && (
+                              <div className="flex items-center text-sm">
+                                <DollarSign className="h-4 w-4 mr-1 text-gray-500" />
+                                {typeof cls.price === "number"
+                                  ? cls.price.toFixed(2)
+                                  : cls.price}
+                              </div>
+                            )}
                           </div>
                         </div>
                       ))
@@ -239,6 +254,14 @@ const TrainerSchedule = ({
                             <Users className="h-4 w-4 mr-1 text-gray-500" />
                             {cls.enrolled} enrolled
                           </div>
+                          {cls.price !== undefined && (
+                            <div className="flex items-center text-sm">
+                              <DollarSign className="h-4 w-4 mr-1 text-gray-500" />
+                              {typeof cls.price === "number"
+                                ? cls.price.toFixed(2)
+                                : cls.price}
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))

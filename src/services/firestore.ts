@@ -598,9 +598,28 @@ export const recordAttendance = async (
 ): Promise<string> => {
   try {
     const attendanceRef = collection(db, COLLECTIONS.ATTENDANCE);
+
+    // If we have a memberId but no memberName, try to fetch the member's name
+    if (attendance.memberId && !attendance.memberName) {
+      try {
+        const memberDoc = await getDoc(
+          doc(db, COLLECTIONS.MEMBERS, attendance.memberId),
+        );
+        if (memberDoc.exists()) {
+          const memberData = memberDoc.data() as FirestoreMember;
+          attendance.memberName = memberData.name;
+          attendance.memberIdNumber = memberData.memberId;
+        }
+      } catch (memberError) {
+        console.error("Error fetching member details:", memberError);
+        // Continue with attendance recording even if member details fetch fails
+      }
+    }
+
     const docRef = await addDoc(attendanceRef, {
       ...attendance,
       checkInTime: serverTimestamp(),
+      date: attendance.date || Timestamp.fromDate(new Date()),
       createdAt: serverTimestamp(),
     });
 
@@ -648,6 +667,68 @@ export const getMemberAttendance = async (
     return attendanceRecords;
   } catch (error) {
     console.error("Error getting member attendance:", error);
+    throw error;
+  }
+};
+
+export const getDailyAttendance = async (
+  date: Date = new Date(),
+): Promise<Attendance[]> => {
+  try {
+    const attendanceRef = collection(db, COLLECTIONS.ATTENDANCE);
+
+    // Create start and end timestamps for the given date
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const q = query(
+      attendanceRef,
+      where("date", ">=", Timestamp.fromDate(startOfDay)),
+      where("date", "<=", Timestamp.fromDate(endOfDay)),
+      orderBy("date", "desc"),
+    );
+
+    const snapshot = await getDocs(q);
+
+    const attendanceRecords: Attendance[] = [];
+    snapshot.forEach((doc) => {
+      attendanceRecords.push({
+        ...(doc.data() as Attendance),
+        id: doc.id,
+      });
+    });
+
+    return attendanceRecords;
+  } catch (error) {
+    console.error("Error getting daily attendance:", error);
+    throw error;
+  }
+};
+
+export const getMemberByIdNumber = async (
+  memberIdNumber: string,
+): Promise<Member | null> => {
+  try {
+    const membersRef = collection(db, COLLECTIONS.MEMBERS);
+    const q = query(membersRef, where("memberId", "==", memberIdNumber));
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      return null;
+    }
+
+    const doc = snapshot.docs[0];
+    const data = doc.data() as FirestoreMember;
+
+    return {
+      ...convertFirestoreMemberToMember(data),
+      id: doc.id,
+    };
+  } catch (error) {
+    console.error("Error getting member by ID number:", error);
     throw error;
   }
 };

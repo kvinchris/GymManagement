@@ -33,11 +33,14 @@ export interface FirestoreClass
 export interface Attendance {
   id: string;
   memberId: string;
+  memberName?: string; // For display purposes
+  memberIdNumber?: string; // The member's ID number for display
   classId?: string;
   date: Timestamp;
   checkInTime: Timestamp;
   checkOutTime?: Timestamp;
   notes?: string;
+  checkInMethod: "qr" | "manual";
 }
 
 export interface Payment {
